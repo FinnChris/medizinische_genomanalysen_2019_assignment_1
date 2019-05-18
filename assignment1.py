@@ -95,10 +95,10 @@ class Assignment1:
         return self.sam.header['HD']
         
     def get_properly_paired_reads_of_gene(self):
-        i=0
+        i = 0
         for read in self.sam.fetch(self.location,self.gstart, self.gstop):
             if read.is_proper_pair:
-                i+=1
+                i += 1
         return i
         
     def get_gene_reads_with_indels(self):
@@ -122,6 +122,7 @@ class Assignment1:
             sum_cov += float(line[3])
             count += 1
         total_average_cov = sum_cov/count
+        #self.avg_cov = total_average_cov
         return total_average_cov
 
     def calculate_gene_average_coverage(self):
@@ -143,8 +144,8 @@ class Assignment1:
         print("Gene symbol:", self.get_gene_symbol())
         print("Sam Header:", self.get_sam_header())
         print("Number of properly paired reads:", self.get_properly_paired_reads_of_gene())
-        print("Gene reads containing indels:", self.get_gene_reads_with_indels())
-        print("Total average coverage:", self.calculate_total_average_coverage())
+        #print("Gene reads containing indels:", self.get_gene_reads_with_indels())
+        #print("Total average coverage:", self.calculate_total_average_coverage())
         print("Gene average coverage:", self.calculate_gene_average_coverage())
         print("Number of mapped reads:", self.get_number_mapped_reads())
         print("Region of gene:", self.get_region_of_gene())
@@ -155,9 +156,10 @@ class Assignment1:
 def main():
     print("Assignment 1")
     assignment1 = Assignment1()
+    assignment1.download_gene_coordinates("hg38", "genecoordinates.txt")
     #assignment1.print_summary()
-    print(assignment1.calculate_total_average_coverage())
-    #assignment1.get_coordinates_of_gene()
+    #print(assignment1.calculate_total_average_coverage())
+
     #print(assignment1.get_sam_header())
     #print(vars(assignment1))
     #assignment1.get_properly_paired_reads_of_gene()
