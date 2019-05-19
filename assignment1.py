@@ -25,6 +25,9 @@ class Assignment1:
         self.ex_stop = []
         self.bamfile = bamfile
         self.sam = pysam.AlignmentFile(self.bamfile,"rb")
+        self.get_coordinates_of_gene()
+        self.pybed_sam = pybedtools.BedTool(self.bamfile)
+        self.pybed_coverage = self.pybed_sam.genome_coverage(bg=True)
 
     
     def download_gene_coordinates(self, genome_reference, file_name):
@@ -68,7 +71,7 @@ class Assignment1:
         
         print("Done fetching data")
         
-    def get_coordinates_of_gene(self, input_file = "coordinates_S100B.txt"):
+    def get_coordinates_of_gene(self, input_file = "genecoordinates.txt"):
         ## Use UCSC file
         coordinates = open(input_file,"r")
 
@@ -114,25 +117,45 @@ class Assignment1:
         return i
 
     def calculate_total_average_coverage(self):
-        pybed_sam = pybedtools.BedTool(self.bamfile)
-        coverage = pybed_sam.genome_coverage(bg=True)
+        coverage = self.pybed_coverage
         sum_cov = 0.0
         count = 0
         for line in coverage:
             sum_cov += float(line[3])
             count += 1
         total_average_cov = sum_cov/count
-        #self.avg_cov = total_average_cov
         return total_average_cov
 
     def calculate_gene_average_coverage(self):
-        print("todo")
+        genome_coverage = self.pybed_coverage
+
+        sum_cov = 0.0
+        count = 0
+
+        for item in genome_coverage:
+            local_cov = float(item[3])
+            start = int(item[1])
+            end = int(item[2])
+
+            if start >= self.gstart:
+                if end <= self.gstop:
+                    sum_cov += local_cov
+                    count += 1
+        gene_avg_cov = sum_cov/count
+        return gene_avg_cov
+
         
     def get_number_mapped_reads(self):
-        print("todo")
+        mapped_reads = 0
+        for read in self.sam.fetch(self.location,self.gstart, self.gstop):
+            if not read.is_unmapped:
+                mapped_reads += 1
+
+        return mapped_reads
 
     def get_region_of_gene(self):
-        print("todo")
+        return self.location
+
         
     def get_number_of_exons(self):
         return self.n_exon
@@ -141,11 +164,12 @@ class Assignment1:
     def print_summary(self):
         print("Print all results here")
         print("Gene name:", self.gene)
+        print("gene start: ",self.gstart, " gene stop: ", self.gstop)
         print("Gene symbol:", self.get_gene_symbol())
         print("Sam Header:", self.get_sam_header())
         print("Number of properly paired reads:", self.get_properly_paired_reads_of_gene())
-        #print("Gene reads containing indels:", self.get_gene_reads_with_indels())
-        #print("Total average coverage:", self.calculate_total_average_coverage())
+        print("Gene reads containing indels:", self.get_gene_reads_with_indels())
+        print("Total average coverage:", self.calculate_total_average_coverage())
         print("Gene average coverage:", self.calculate_gene_average_coverage())
         print("Number of mapped reads:", self.get_number_mapped_reads())
         print("Region of gene:", self.get_region_of_gene())
@@ -156,17 +180,7 @@ class Assignment1:
 def main():
     print("Assignment 1")
     assignment1 = Assignment1()
-    assignment1.download_gene_coordinates("hg38", "genecoordinates.txt")
-    #assignment1.print_summary()
-    #print(assignment1.calculate_total_average_coverage())
-
-    #print(assignment1.get_sam_header())
-    #print(vars(assignment1))
-    #assignment1.get_properly_paired_reads_of_gene()
-    #assignment1.get_gene_reads_with_indels()
-    #assignment1.download_gene_coordinates("hg38","coordinates_" + assignment1.gene + ".txt")
-    
-    
+    assignment1.print_summary()
     print("Done with assignment 1")
     
         
